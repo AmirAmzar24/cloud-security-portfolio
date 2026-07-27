@@ -1,0 +1,27 @@
+# ─── Terraform ───────────────────────────────────────────────
+# Provider binaries & module cache (large, machine-specific — never commit)
+**/.terraform/*
+
+# State files — CAN CONTAIN SECRETS in plaintext. Never commit.
+*.tfstate
+*.tfstate.*
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Variable files often hold secrets (account IDs, ExternalIds, etc.)
+*.tfvars
+*.tfvars.json
+# ...but DO allow example templates so others can see the shape:
+!*.tfvars.example
+
+# CLI config overrides
+.terraformrc
+terraform.rc
+
+# ─── Credentials / secrets (belt-and-suspenders) ─────────────
+*.pem
+*.key
+.env
+credentials
