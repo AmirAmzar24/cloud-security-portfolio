@@ -11,6 +11,14 @@ terraform {
       version = "~> 5.0"        # any 5.x version; won't silently jump to 6.x and break us
     }
   }
+
+  backend "s3" {
+    bucket = "amir-cloudsecproject-tfstate-640168411629"
+    key = "project1/terraform.tfstate"
+    region = "ap-southeast-1"
+    use_lockfile = true
+    encrypt = true
+  }
 }
 
 # Configure the AWS provider. It automatically uses the credentials you set
