@@ -1,29 +1,29 @@
 # -- VPC -- 
 resource "aws_vpc" "main_vpc" {
-    cidr_block = "10.0.0.0/16"
+    cidr_block = var.vpc_cidr
     tags = {
-        Name = "project2-vpc"
+        Name = "${var.project_name}-vpc"
     }
 }
 
 # -- Public Subnet --
 resource "aws_subnet" "public_subnet" {
     vpc_id = aws_vpc.main_vpc.id
-    cidr_block = "10.0.1.0/24"
-    availability_zone = "ap-southeast-1a"
+    cidr_block = var.public_subnet_cidr
+    availability_zone = var.availability_zone
     map_public_ip_on_launch = true
     tags = {
-        Name = "project2-public"
+        Name = "${var.project_name}-public"
     }
 }
 
 # -- Private Subnet --
 resource "aws_subnet" "private_subnet" {
     vpc_id = aws_vpc.main_vpc.id
-    cidr_block = "10.0.2.0/24"
-    availability_zone = "ap-southeast-1a"
+    cidr_block = var.private_subnet_cidr
+    availability_zone = var.availability_zone
     tags = {
-        Name = "project2-private"
+        Name = "${var.project_name}-private"
     }
 }
 
@@ -31,7 +31,7 @@ resource "aws_subnet" "private_subnet" {
 resource "aws_internet_gateway" "igw" {
     vpc_id = aws_vpc.main_vpc.id
     tags = {
-        Name = "project2-igw"
+        Name = "${var.project_name}-igw"
     }
 }
 
@@ -43,7 +43,7 @@ resource "aws_route_table" "public_rt" {
         gateway_id = aws_internet_gateway.igw.id
     }
     tags = {
-        Name = "project2-public-rt"
+        Name = "${var.project_name}-public-rt"
     }
 }
 

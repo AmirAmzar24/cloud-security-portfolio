@@ -1,31 +1,29 @@
-# outputs.tf — values exposed after `apply` (view with `terraform output`).
-
 output "vpc_id" {
   description = "ID of the VPC"
-  value       = module.vpc.vpc_id
+  value       = aws_vpc.main_vpc.id
 }
 
 output "public_subnet_id" {
   description = "ID of the public subnet"
-  value       = module.vpc.public_subnet_id
+  value       = aws_subnet.public_subnet.id
 }
 
 output "private_subnet_id" {
   description = "ID of the private subnet"
-  value       = module.vpc.private_subnet_id
+  value       = aws_subnet.private_subnet.id
 }
 
 output "internet_gateway_id" {
   description = "ID of the Internet Gateway"
-  value       = module.vpc.internet_gateway_id
+  value       = aws_internet_gateway.igw.id
 }
 
 output "web_sg_id" {
   description = "ID of the web-tier security group"
-  value       = module.vpc.web_sg_id
+  value       = aws_security_group.web_sg.id
 }
 
 output "db_sg_id" {
   description = "ID of the database security group"
-  value       = module.vpc.db_sg_id
+  value       = aws_security_group.db_sg.id
 }
