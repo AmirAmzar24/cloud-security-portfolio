@@ -5,7 +5,6 @@ variable "external_id" {
 }
 
 variable "trusted_principal_arn" {
-  description = "ARN of the principal allowed to assume the roles"
+  description = "ARN of the principal allowed to assume these roles"
   type        = string
-  default     = "arn:aws:iam::640168411629:user/admin-amir"
 }

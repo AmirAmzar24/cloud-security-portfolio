@@ -1,6 +1,6 @@
 # -- SecurityAuditRole --
 data "aws_iam_policy_document" "audit_readonly" {
-    statement { 
+    statement {
         effect = "Allow"
         actions = ["ec2:DescribeInstances", "ec2:DescribeVpcs", "ec2:DescribeVolumes"]
         resources = ["*"]
@@ -19,7 +19,7 @@ resource "aws_iam_role" "security_audit" {
         Statement = [
             {
                 Effect = "Allow"
-                Principal = { AWS = "arn:aws:iam::640168411629:user/admin-amir"}
+                Principal = { AWS = var.trusted_principal_arn }
                 Action = "sts:AssumeRole"
                 Condition = {
                     StringEquals = {
@@ -69,7 +69,7 @@ resource "aws_iam_role" "incident_response" {
         Statement = [
             {
                 Effect = "Allow"
-                Principal = { AWS = "arn:aws:iam::640168411629:user/admin-amir"}
+                Principal = { AWS = var.trusted_principal_arn }
                 Action = "sts:AssumeRole"
                 Condition = {
                     Bool = {
