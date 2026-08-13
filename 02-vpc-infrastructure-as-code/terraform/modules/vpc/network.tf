@@ -8,22 +8,24 @@ resource "aws_vpc" "main_vpc" {
 
 # -- Public Subnet --
 resource "aws_subnet" "public_subnet" {
+    for_each = var.public_subnets
     vpc_id = aws_vpc.main_vpc.id
-    cidr_block = var.public_subnet_cidr
-    availability_zone = var.availability_zone
+    cidr_block = each.value
+    availability_zone = each.key
     map_public_ip_on_launch = true
     tags = {
-        Name = "${var.project_name}-public"
+        Name = "${var.project_name}-public-${each.key}"
     }
 }
 
 # -- Private Subnet --
 resource "aws_subnet" "private_subnet" {
+    for_each = var.private_subnets
     vpc_id = aws_vpc.main_vpc.id
-    cidr_block = var.private_subnet_cidr
-    availability_zone = var.availability_zone
+    cidr_block = each.value
+    availability_zone = each.key
     tags = {
-        Name = "${var.project_name}-private"
+        Name = "${var.project_name}-private-${each.key}"
     }
 }
 
@@ -49,7 +51,8 @@ resource "aws_route_table" "public_rt" {
 
 # -- Public Subnet RT Association --
 resource "aws_route_table_association" "public_assoc" {
-    subnet_id = aws_subnet.public_subnet.id
+    for_each = aws_subnet.public_subnet
+    subnet_id = each.value.id
     route_table_id = aws_route_table.public_rt.id
 }
 
@@ -95,7 +98,7 @@ resource "aws_security_group" "db_sg" {
 resource "aws_eip" "nat_eip" {
     domain = "vpc"
     tags = {
-        Name = "project2-nat-eip"
+        Name = "${var.project_name}-nat-eip"
     }
 }
 
@@ -105,7 +108,7 @@ resource "aws_nat_gateway" "nat" {
     subnet_id = aws_subnet.public_subnet.id
     depends_on = [aws_internet_gateway.igw]
     tags = {
-        Name = "project2-nat"
+        Name = "${var.project_name}-nat"
     }
 }
 
@@ -117,7 +120,7 @@ resource "aws_route_table" "private_rt" {
         nat_gateway_id = aws_nat_gateway.nat.id
     }
     tags = {
-        Name = "project2-private-rt"
+        Name = "${var.project_name}-private-rt"
     }
 }
 
@@ -127,3 +130,29 @@ resource "aws_route_table_association" "private_assoc" {
     route_table_id = aws_route_table.private_rt.id
 }
 */
+
+# -- Private Subnet Route Table (for S3 Endpoint) --
+resource "aws_route_table" "private_rt" {
+    vpc_id = aws_vpc.main_vpc.id
+    tags = {
+        Name = "${var.project_name}-private-rt"
+    }
+}
+
+# -- Private Subnet RT Association --
+resource "aws_route_table_association" "private_assoc" {
+    for_each = aws_subnet.private_subnet
+    subnet_id = each.value.id
+    route_table_id = aws_route_table.private_rt.id
+}
+
+# -- S3 Gateway Endpoint --
+resource "aws_vpc_endpoint" "s3_vpc_endpoint" {
+    vpc_id = aws_vpc.main_vpc.id
+    service_name = "com.amazonaws.ap-southeast-1.s3"
+    vpc_endpoint_type = "Gateway"
+    route_table_ids = [aws_route_table.private_rt.id]
+    tags = {
+        Name = "${var.project_name}-s3-endpoint"
+    }
+}

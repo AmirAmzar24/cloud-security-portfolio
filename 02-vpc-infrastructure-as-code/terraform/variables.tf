@@ -5,25 +5,24 @@ variable "vpc_cidr" {
     default = "10.0.0.0/16"
 }
 
-# -- Public Subnet CIDR --
-variable "public_subnet_cidr" {
-    description = "CIDR block for public subnet"
-    type = string
-    default = "10.0.1.0/24"
+# -- Public Subnet --
+variable "public_subnets" {
+    description = "Map of AZ -> CIDR for public subnets"
+    type = map(string)
+    default = {
+        "ap-southeast-1a" = "10.0.1.0/24"
+        "ap-southeast-1b" = "10.0.3.0/24"
+    }
 }
 
-# -- Private Subnet CIDR --
-variable "private_subnet_cidr" {
-    description = "CIDR block for private subnet"
-    type = string
-    default = "10.0.2.0/24"
-}
-
-# -- AZ --
-variable "availability_zone" {
-    description = "Availability zone for the subnet"
-    type = string
-    default = "ap-southeast-1a"
+# -- Private Subnet --
+variable "private_subnets" {
+    description = "Map of AZ -> CIDR for private subnets"
+    type = map(string)
+    default = {
+        "ap-southeast-1a" = "10.0.2.0/24"
+        "ap-southeast-1b" = "10.0.4.0/24"
+    }
 }
 
 # -- Project Name --
