@@ -56,6 +56,42 @@ resource "aws_route_table_association" "public_assoc" {
     route_table_id = aws_route_table.public_rt.id
 }
 
+# -- Public Subnet NACL --
+resource "aws_network_acl" "public" {
+    vpc_id = aws_vpc.main_vpc.id
+    subnet_ids = [for s in aws_subnet.public_subnet : s.id]
+    ingress {
+        rule_no = 100
+        action = "allow"
+        protocol = "tcp"
+        from_port = 443
+        to_port = 443
+        cidr_block = "0.0.0.0/0"
+    }
+
+    ingress {
+        rule_no = 110
+        action = "allow"
+        protocol = "tcp"
+        from_port = 1024
+        to_port = 65535
+        cidr_block = "0.0.0.0/0"
+    }
+
+    egress {
+        rule_no = 100
+        action = "allow"
+        protocol = "-1"
+        from_port = 0
+        to_port = 0
+        cidr_block = "0.0.0.0/0"
+    }
+
+    tags = {
+        Name = "${var.project_name}-public-nacl"
+    }
+}
+
 # -- Web Server SG --
 resource "aws_security_group" "web_sg" {
     vpc_id = aws_vpc.main_vpc.id
