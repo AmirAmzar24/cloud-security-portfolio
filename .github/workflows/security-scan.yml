@@ -31,7 +31,7 @@ jobs:
       - name: Debug OIDC claims (temporary)
         run: |
           IDTOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | jq -r '.value')
-          IDTOKEN="$IDTOKEN" python3 -c 'import os,json,base64; p=os.environ["IDTOKEN"].split(".")[1]; p+="="*(-len(p)%4); c=json.loads(base64.urlsafe_b64decode(p.encode())); print("sub =", c.get("sub")); print("aud =", c.get("aud"))'
+          IDTOKEN="$IDTOKEN" python3 -c 'import os,json,base64; p=os.environ["IDTOKEN"].split(".")[1]; p+="="*(-len(p)%4); c=json.loads(base64.urlsafe_b64decode(p.encode())); print("repository =", c.get("repository")); print("repository_id =", c.get("repository_id")); print("repository_owner =", c.get("repository_owner")); print("repository_owner_id =", c.get("repository_owner_id"))'
 
       - name: Configure AWS Credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
