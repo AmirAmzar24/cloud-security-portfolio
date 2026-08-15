@@ -10,6 +10,12 @@ terraform {
       source  = "hashicorp/aws" # official AWS provider from the Terraform Registry
       version = "~> 5.0"        # any 5.x version; won't silently jump to 6.x and break us
     }
+
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4.0"
+    }
+
   }
 
   backend "s3" {
