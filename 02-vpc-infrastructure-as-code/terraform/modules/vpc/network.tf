@@ -1,5 +1,6 @@
 # -- VPC -- 
 resource "aws_vpc" "main_vpc" {
+    #checkov:skip=CKV2_AWS_11:VPC flow logs are deferred to Project 5 (centralized logging)
     cidr_block = var.vpc_cidr
     tags = {
         Name = "${var.project_name}-vpc"
@@ -8,6 +9,7 @@ resource "aws_vpc" "main_vpc" {
 
 # -- Public Subnet --
 resource "aws_subnet" "public_subnet" {
+    #checkov:skip=CKV_AWS_130:Public subnets must auto-assign public IPs by design
     for_each = var.public_subnets
     vpc_id = aws_vpc.main_vpc.id
     cidr_block = each.value
@@ -58,6 +60,7 @@ resource "aws_route_table_association" "public_assoc" {
 
 # -- Public Subnet NACL --
 resource "aws_network_acl" "public" {
+    #checkov:skip=CKV_AWS_231:Ephemeral port range (1024-65535) required for stateless return traffic; SG is the primary control
     vpc_id = aws_vpc.main_vpc.id
     subnet_ids = [for s in aws_subnet.public_subnet : s.id]
     ingress {
@@ -92,17 +95,27 @@ resource "aws_network_acl" "public" {
     }
 }
 
+# -- Lock Down Default SG (Deny All) --
+resource "aws_default_security_group" "default" {
+    vpc_id = aws_vpc.main_vpc.id
+    #no ingress/egress blocks = allow nothing
+}
+
 # -- Web Server SG --
 resource "aws_security_group" "web_sg" {
+    #checkov:skip=CKV2_AWS_5:No EC2 instances in this lab; SG intentionally unattached (empty scaffold)
+    #checkov:skip=CKV_AWS_382:Web tier legitimately needs broad outbound access
     vpc_id = aws_vpc.main_vpc.id
     description = "Web Server SG for project2 VPC"
     ingress {
+        description = "Allow HTTPS from the internet"
         from_port = 443
         to_port = 443
         protocol = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }
     egress {
+        description = "Allow all outbound"
         from_port = 0
         to_port = 0
         protocol = "-1"
@@ -112,15 +125,18 @@ resource "aws_security_group" "web_sg" {
 
 # -- DB Server SG --
 resource "aws_security_group" "db_sg" {
+    #checkov:skip=CKV2_AWS_5:No EC2 instances in this lab; SG intentionally unattached (empty scaffold)
     vpc_id = aws_vpc.main_vpc.id
     description = "DB Server SG for project2 VPC"
     ingress {
+        description = "Allow MySQL from web tier only"
         from_port = 3306
         to_port = 3306
         protocol = "tcp"
         security_groups = [aws_security_group.web_sg.id]
     }
     egress {
+        description = "Allow HTTPS outbound"
         from_port = 443
         to_port = 443
         protocol = "tcp"

@@ -38,6 +38,7 @@ resource "aws_iam_role_policy_attachment" "audit_attach" {
 
 # -- IncidentResponseRole --
 data "aws_iam_policy_document" "incident_response" {
+    #checkov:skip=CKV_AWS_356:Write actions are constrained by a Quarantine tag condition, not a resource ARN
     statement {
         sid = "ReadInvestigate"
         effect = "Allow"
