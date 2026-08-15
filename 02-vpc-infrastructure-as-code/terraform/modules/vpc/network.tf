@@ -60,6 +60,7 @@ resource "aws_route_table_association" "public_assoc" {
 
 # -- Public Subnet NACL --
 resource "aws_network_acl" "public" {
+    #checkov:skip=CKV_AWS_231:Ephemeral port range (1024-65535) required for stateless return traffic; SG is the primary control
     #checkov:skip=CKV2_AWS_1:False positive - NACL is attached via inline subnet_ids; Checkov only detects separate aws_network_acl_association resources
     vpc_id = aws_vpc.main_vpc.id
     subnet_ids = [for s in aws_subnet.public_subnet : s.id]
