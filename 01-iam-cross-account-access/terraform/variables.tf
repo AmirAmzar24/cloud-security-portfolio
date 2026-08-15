@@ -10,9 +10,5 @@ variable "trusted_principal_arn" {
   default     = "arn:aws:iam::640168411629:user/admin-amir"
 }
 
-variable "github_repo" {
-  description = "GitHub repo allowed to assume the DeploymentRole"
-  type        = string
-  default     = "AmirAmzar24/cloud-security-portfolio"
-}
+
 
