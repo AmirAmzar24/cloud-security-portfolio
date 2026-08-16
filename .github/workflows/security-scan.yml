@@ -18,7 +18,7 @@ jobs:
           directory: .
           soft_fail: false
 
-  aws-auth:
+  terraform-plan:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -36,3 +36,12 @@ jobs:
 
       - name: Verify OIDC auth (zero stored keys)
         run: aws sts get-caller-identity
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init & Plan (Project 2 VPC)
+        working-directory: 02-vpc-infrastructure-as-code/terraform
+        run: |
+          terraform init -input=false
+          terraform plan -input=false -lock=false
