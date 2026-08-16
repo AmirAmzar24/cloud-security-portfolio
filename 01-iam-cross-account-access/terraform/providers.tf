@@ -19,11 +19,11 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "amir-cloudsecproject-tfstate-640168411629"
-    key = "project1/terraform.tfstate"
-    region = "ap-southeast-1"
+    bucket       = "amir-cloudsecproject-tfstate-640168411629"
+    key          = "project1/terraform.tfstate"
+    region       = "ap-southeast-1"
     use_lockfile = true
-    encrypt = true
+    encrypt      = true
   }
 }
 

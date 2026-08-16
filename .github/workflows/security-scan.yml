@@ -11,6 +11,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Secret scan (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform format check
+        run: terraform fmt -check -recursive
 
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@v12
@@ -19,6 +32,7 @@ jobs:
           soft_fail: false
 
   terraform-plan:
+    needs: iac-scan
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -40,8 +54,9 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Terraform Init & Plan (Project 2 VPC)
+      - name: Terraform Init, Validate & Plan (Project 2 VPC)
         working-directory: 02-vpc-infrastructure-as-code/terraform
         run: |
           terraform init -input=false
+          terraform validate
           terraform plan -input=false -lock=false
