@@ -12,7 +12,7 @@ I'm Amir, and I'm building this portfolio to develop and demonstrate practical c
 |---|---------|----------------------|--------|
 | 1 | [IAM Cross-Account Access](01-iam-cross-account-access/) | Multi-account trust, least-privilege roles, MFA & ExternalId conditions, tag-scoped permissions, assume-role | ✅ Complete |
 | 2 | [VPC Infrastructure as Code](02-vpc-infrastructure-as-code/) | Network segmentation, public/private subnets, routing, tiered least-privilege security groups | ✅ Complete |
-| 3 | CI/CD Security Pipeline | Shift-left security, policy as code, automated security testing | 📋 Planned |
+| 3 | [CI/CD Security Pipeline](03-cicd-security-pipeline/) | Shift-left security, policy-as-code (Checkov), secret scanning, OIDC zero-key auth, drift detection, security gating | ✅ Complete |
 | 4 | Cloud Security Audit | Compliance auditing (Prowler), risk prioritization, remediation | 📋 Planned |
 | 5 | Centralized Logging | Log aggregation, immutability, incident response | 📋 Planned |
 | 6 | Break-Glass Access | Emergency access procedures, governance, audit trails | 📋 Planned |
