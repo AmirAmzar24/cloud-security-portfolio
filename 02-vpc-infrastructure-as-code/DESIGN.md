@@ -14,13 +14,15 @@ Lastly, putting critical resources like databases in private subnets reduces the
 
 **Outbound:** `web_sg` allows all egress, which matters because the web server needs to reach out to external APIs and services. `db_sg`, however, is scoped to HTTPS on port 443 only.
 
-**Private subnet internet access:** To let resources in the private subnet fetch security patches or updates, I *designed* a NAT gateway (outbound-only) and validated it with `terraform plan`, but deliberately left it un-applied to avoid cost. So in the deployed state, the private subnet has no route to the internet and is fully isolated. The NAT is the pattern I'd apply if the private tier needed outbound patching — it would let the database reach *out* for updates while remaining unreachable *in* from the internet.
+**Private subnet internet access:** To let resources in the private subnet fetch security patches or updates, I *designed* a NAT gateway (outbound-only) and validated it with `terraform plan`, but deliberately left it un-applied to avoid cost. So in the deployed state, the private subnets have no route to the general internet. The NAT is the pattern I'd apply if the private tier needed outbound patching — it would let the database reach *out* for updates while remaining unreachable *in* from the internet.
+
+The private subnets do still get one private path out: an **S3 Gateway VPC Endpoint** attached to their route table. That lets them reach S3 over AWS's internal network — no NAT Gateway, no cost, and no internet exposure. So the private tier stays isolated from the internet while still being able to talk to S3 (for things like backups or reading objects) privately.
 
 ## 3. How do security groups and NACLs complement each other?
 
-In my build, I did not write a NACL, so my subnets use the default NACL, which allows all inbound and outbound traffic. However, if I were to add a custom NACL, it would complement my design by adding a subnet-level firewall. Because NACLs are stateless, you have to explicitly write rules for both inbound and outbound traffic. They're useful for broad denies — such as blocking a malicious IP range across an entire subnet — which security groups cannot do, since they are allow-only.
+In my build, I wrote a custom NACL on the public subnets, which adds a subnet-level firewall on top of the security groups. Because NACLs are stateless, I had to write rules for both directions explicitly: inbound 443 for the web traffic, plus the ephemeral port range (1024–65535) inbound so return traffic can get back in, and all outbound. This is different from a security group, which is stateful and automatically allows the return traffic for anything it lets in.
 
-Because a NACL is a subnet-level firewall and a security group is an instance-level firewall, traffic must pass *both* to reach a resource. It's like two gates guarding the resource: the NACL handles subnet-wide controls, while the security group handles the precise rules for accessing that instance. To reach the resource behind those two gates, both must allow the traffic.
+Because a NACL is a subnet-level firewall and a security group is an instance-level firewall, traffic must pass *both* to reach a resource. It's like two gates guarding the resource: the NACL handles subnet-wide controls, while the security group handles the precise rules for accessing that instance. To reach the resource behind those two gates, both must allow the traffic. NACLs are also useful for broad denies — such as blocking a malicious IP range across an entire subnet — which security groups cannot do, since they are allow-only.
 
 ## 4. Where would inspection or logging live in a real environment?
 
@@ -42,7 +44,7 @@ This design reduces attack surface in several ways:
 
 **CIDR headroom** — my VPC uses the CIDR `10.0.0.0/16`, which provides 2^16 (65,536) addresses. The public and private subnets each use only about 256 addresses, leaving plenty of room to add more subnets without redesigning the addressing.
 
-**Multi-AZ for high availability** — currently this build deploys both the public and private subnets in the same AZ. In production, we could use a multi-AZ setup for redundancy and availability in case something happens (like a data-center failure), replicating the tiers across multiple AZs — e.g., `public-a` + `public-b` and `private-a` + `private-b`.
+**Multi-AZ for high availability** — the build already spreads both tiers across two AZs (`ap-southeast-1a` and `1b`): `public-a` + `public-b` and `private-a` + `private-b`, created with `for_each` over an AZ→CIDR map. That gives redundancy if a single data center fails, and it's the foundation for running highly-available services later — e.g. a load balancer across both public subnets and a database with a standby in the second AZ.
 
 **Adding tiers** — adding more tiers, like dedicated database subnets or additional app subnets, doesn't require re-architecting the whole VPC. We just create the subnet, its route table, and its security groups — repeating the existing pattern.
 

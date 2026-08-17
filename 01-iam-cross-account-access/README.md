@@ -13,6 +13,8 @@ Cross-account IAM roles on AWS, built with Terraform — demonstrating secure ro
 - **Least-privilege permission policies** — custom, hand-scoped policies instead of broad AWS-managed ones.
 - **Tag-scoped write permissions** — incident-response containment actions restricted to resources tagged `Quarantine=true`.
 - **Secret handling** — the ExternalId is a Terraform variable sourced from a gitignored `terraform.tfvars`, never committed (see `terraform.tfvars.example` for the shape).
+- **Zero-key CI/CD authentication (OIDC)** — a `GitHubActionsDeploymentRole` trusted via GitHub Actions OIDC federation, so the CI pipeline (Project 3) reaches AWS with **no stored access keys**; the trust policy is scoped to this specific repo.
+- **Production-shaped Terraform** — the roles are packaged as a reusable module, with state stored in an encrypted, locked S3 backend.
 
 ## Architecture
 
@@ -22,6 +24,7 @@ Two roles, each protected by two gates — a **trust policy** (who can assume it
 |------|------------------------|------------------------------|
 | **SecurityAuditRole** | `admin-amir` + correct **ExternalId** | Read-only EC2 metadata: `DescribeInstances`, `DescribeVpcs`, `DescribeVolumes` |
 | **IncidentResponseRole** | `admin-amir` + **MFA** | Read: `ec2:Describe*`. Contain (tag-gated): `StopInstances`, `CreateSnapshot`, `RevokeSecurityGroupEgress` |
+| **GitHubActionsDeploymentRole** | GitHub Actions in **this repo**, via **OIDC** (no stored keys) | `ReadOnlyAccess` — read-only, used by the CI pipeline to run `terraform plan` |
 
 `IncidentResponseRole` deliberately **excludes** `ec2:TerminateInstances` — containment should be reversible and must not destroy forensic evidence (stopping an instance is recoverable; terminating is not).
 
@@ -29,8 +32,8 @@ Two roles, each protected by two gates — a **trust policy** (who can assume it
 
 ## Tech
 
-- **AWS:** IAM, STS, EC2
-- **Terraform:** `>= 1.0`, AWS provider `~> 5.0`
+- **AWS:** IAM, STS, EC2, IAM OIDC identity provider (GitHub Actions)
+- **Terraform:** `>= 1.0`, AWS provider `~> 5.0` (roles as a reusable module; S3 remote state)
 - **Region:** `ap-southeast-1`
 
 ## How to Run
