@@ -1,0 +1,3 @@
+# Prowler scan reports — a full inventory + findings map of the account.
+# Kept local only; the curated results live in README.md and DESIGN.md.
+output/
