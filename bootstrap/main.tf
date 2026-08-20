@@ -35,3 +35,27 @@ resource "aws_s3_bucket_public_access_block" "tf_state" {
   restrict_public_buckets = true
 }
 
+# -- IAM Policy Doc -- 
+data "aws_iam_policy_document" "tf_state" {
+  statement {
+    effect  = "Deny"
+    actions = ["s3:*"]
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+    resources = [aws_s3_bucket.tf_state.arn, "${aws_s3_bucket.tf_state.arn}/*"]
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
+}
+
+# -- S3 Bucket Policy -- 
+resource "aws_s3_bucket_policy" "tf_state" {
+  bucket = aws_s3_bucket.tf_state.id
+  policy = data.aws_iam_policy_document.tf_state.json
+}
+
